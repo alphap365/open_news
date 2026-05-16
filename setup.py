@@ -19,7 +19,7 @@ setup(
     description="Minimal news fetching: article text, RSS, Google News search, RSS discovery",
     long_description=long_description,
     long_description_content_type="text/markdown",
-    url="https://github.com/yourusername/open_news",
+    url="https://github.com/alphap365/open_news",
     packages=find_packages(),
     package_data={
         "open_news": ["py.typed"],  # optional, for type hints
