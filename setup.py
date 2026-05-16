@@ -14,8 +14,8 @@ with open("README.md", "r", encoding="utf-8") as f:
 setup(
     name="open-news",
     version="0.1.0",
-    author="Your Name",
-    author_email="your.email@example.com",
+    author="ARAJIT PAUL",
+    author_email="",
     description="Minimal news fetching: article text, RSS, Google News search, RSS discovery",
     long_description=long_description,
     long_description_content_type="text/markdown",
