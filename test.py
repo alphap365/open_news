@@ -9,7 +9,7 @@ import sys
 import json
 
 # Import package functions
-from open-news import fetch_article, search_news, get_live_news, get_articles_from_website_rss, set_config_path
+from open_news import fetch_article, search_news, get_live_news, get_articles_from_website_rss, set_config_path
 
 
 
