@@ -26,13 +26,13 @@ Designed to be lightweight and easy to integrate.
 Clone this repository to your computer by using:
 
 ```bash
-git clone https://github.com/alphap365/open_news.git
+git clone https://github.com/alphap365/open-news.git
 ```
 
 Or install directly from GitHub:
 
 ```bash
-pip install git+https://github.com/alphap365/open_news.git
+pip install git+https://github.com/alphap365/open-news.git
 ```
 
 **Dependencies** (automatically installed):
