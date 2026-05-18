@@ -24,3 +24,5 @@ config.json   # because each user will have their own
 # OS junk
 .DS_Store
 Thumbs.db
+
+.gitignore

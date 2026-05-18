@@ -1,6 +1,7 @@
 """Fetch full article text and metadata using newspaper4k, trafilatura, or BeautifulSoup fallback."""
 
 import logging
+from datetime import datetime
 from typing import Dict, Optional, Tuple
 
 try:
@@ -9,12 +10,18 @@ except ImportError:
     Article = None
 try:
     import trafilatura
+    import trafilatura.settings
 except ImportError:
     trafilatura = None
+
 from bs4 import BeautifulSoup
 import httpx
 
 logger = logging.getLogger(__name__)
+
+# Minimum character threshold to consider extraction successful
+_MIN_TEXT_LENGTH = 200
+
 
 def _extract_with_newspaper(url: str) -> Tuple[str, Dict]:
     """Return (text, metadata). Metadata dict may contain title, publish_date, source."""
@@ -25,9 +32,17 @@ def _extract_with_newspaper(url: str) -> Tuple[str, Dict]:
         article.download()
         article.parse()
         text = article.text or ""
+
+        # FIX (Bug 3): publish_date may already be a string in some newspaper4k versions
+        pub_date = article.publish_date
+        if isinstance(pub_date, datetime):
+            pub_date = pub_date.isoformat()
+        elif not isinstance(pub_date, str):
+            pub_date = ""
+
         meta = {
             "title": article.title or "",
-            "publish_date": article.publish_date.isoformat() if article.publish_date else "",
+            "publish_date": pub_date,
             "source": article.source_url or "",
         }
         return text, meta
@@ -35,18 +50,40 @@ def _extract_with_newspaper(url: str) -> Tuple[str, Dict]:
         logger.debug(f"newspaper failed for {url}: {e}")
         return "", {}
 
+
 def _extract_with_trafilatura(url: str) -> Tuple[str, Dict]:
-    """Return (text, {}) – no metadata from trafilatura alone."""
+    """Return (text, metadata) using trafilatura with metadata extraction enabled."""
     if not trafilatura:
         return "", {}
     try:
         downloaded = trafilatura.fetch_url(url)
         if downloaded:
-            text = trafilatura.extract(downloaded)
-            return text or "", {}
+            # FIX (Bug 1): use include_metadata so we get title/date without a second HTTP call
+            result = trafilatura.extract(
+                downloaded,
+                include_metadata=True,
+                output_format="json",
+                with_metadata=True,
+            )
+            if result:
+                import json as _json
+                try:
+                    data = _json.loads(result)
+                    text = data.get("text") or data.get("raw_text") or ""
+                    meta = {
+                        "title": data.get("title", ""),
+                        "publish_date": data.get("date", ""),
+                        "source": data.get("sitename", ""),
+                    }
+                    return text, meta
+                except (_json.JSONDecodeError, TypeError):
+                    # Fallback: extract returned a plain string (older trafilatura)
+                    text = trafilatura.extract(downloaded) or ""
+                    return text, {}
     except Exception as e:
         logger.debug(f"trafilatura failed for {url}: {e}")
     return "", {}
+
 
 def _extract_with_bs4(url: str) -> Tuple[str, Dict]:
     """Fallback: extract text and try to guess title from HTML."""
@@ -57,16 +94,14 @@ def _extract_with_bs4(url: str) -> Tuple[str, Dict]:
         with httpx.Client(follow_redirects=True, timeout=15) as client:
             resp = client.get(url, headers=headers)
             resp.raise_for_status()
-            soup = BeautifulSoup(resp.text, 'lxml')
-            # remove noisy tags
+            soup = BeautifulSoup(resp.text, "lxml")
             for tag in soup(["script", "style", "nav", "footer", "header"]):
                 tag.decompose()
-            text = soup.get_text(separator='\n')
+            text = soup.get_text(separator="\n")
             lines = (line.strip() for line in text.splitlines())
             chunks = (phrase.strip() for line in lines for phrase in line.split("  "))
-            text = '\n'.join(chunk for chunk in chunks if chunk)
+            text = "\n".join(chunk for chunk in chunks if chunk)
 
-            # try to get title from <title> tag
             title = ""
             if soup.title:
                 title = soup.title.get_text(strip=True)
@@ -76,49 +111,49 @@ def _extract_with_bs4(url: str) -> Tuple[str, Dict]:
         logger.debug(f"bs4 fallback failed for {url}: {e}")
         return "", {}
 
+
 def fetch_article(url: str) -> Dict:
     """
     Fetch full article content and metadata.
     Returns dict with keys: url, title, text, publish_date, source.
+    All values are strings; 'text' is empty string on complete failure.
     """
     logger.info(f"Fetching article: {url}")
 
-    # Try newspaper (gives best metadata)
+    # Try newspaper4k first (best metadata)
     text, meta = _extract_with_newspaper(url)
-    if text and len(text) > 200:
+    if text and len(text) > _MIN_TEXT_LENGTH:
         logger.debug("newspaper4k success")
         return {
             "url": url,
             "title": meta.get("title", ""),
             "text": text,
             "publish_date": meta.get("publish_date", ""),
-            "source": meta.get("source", "")
+            "source": meta.get("source", ""),
         }
 
-    # Try trafilatura
-    text, _ = _extract_with_trafilatura(url)
-    if text and len(text) > 200:
+    # FIX (Bug 1): trafilatura now returns metadata directly — no second HTTP call needed
+    text, meta = _extract_with_trafilatura(url)
+    if text and len(text) > _MIN_TEXT_LENGTH:
         logger.debug("trafilatura success")
-        # If trafilatura succeeded, try to get title with a quick bs4 fallback
-        _, fallback_meta = _extract_with_bs4(url)  # only for title
         return {
             "url": url,
-            "title": fallback_meta.get("title", ""),
+            "title": meta.get("title", ""),
             "text": text,
-            "publish_date": "",
-            "source": ""
+            "publish_date": meta.get("publish_date", ""),
+            "source": meta.get("source", ""),
         }
 
-    # Fallback to bs4
+    # Final fallback
     text, bs4_meta = _extract_with_bs4(url)
-    if text and len(text) > 200:
+    if text and len(text) > _MIN_TEXT_LENGTH:
         logger.debug("bs4 fallback success")
         return {
             "url": url,
             "title": bs4_meta.get("title", ""),
             "text": text,
             "publish_date": "",
-            "source": ""
+            "source": "",
         }
 
     logger.warning(f"All extraction methods failed for {url}")
