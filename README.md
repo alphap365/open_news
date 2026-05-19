@@ -182,11 +182,11 @@ parameter on `load_rss_feeds_from_config()` in concurrent contexts.
 
 MIT – see [LICENSE](LICENSE) file.
 
-
 ## Contributing
 
-Pull requests and issues are welcome. Keep the module minimal – no caching, summarization, or grouping.
+Contributions are welcome! Whether it’s a bug report, a feature request, or a pull request, please check out our [Contributing Guide](CONTRIBUTING.md) before getting started.
 
+We appreciate all kinds of help – code, documentation, testing, or even just spreading the word. 🚀
 
 ## Acknowledgements
 
