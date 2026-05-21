@@ -1,9 +1,7 @@
-# open_news
+<p align="center"> <h1 align="center">📰 open_news</h1> <p align="center"> <strong>Minimal, config‑free news fetching & article extraction</strong> </p> <p align="center"> <a href="https://pypi.org/project/open-news/"><img src="https://img.shields.io/pypi/v/open-news?color=blue&label=PyPI" alt="PyPI"></a> <a href="https://www.python.org/downloads/"><img src="https://img.shields.io/pypi/pyversions/open-news?color=green" alt="Python versions"></a> <a href="https://github.com/alphap365/open-news/blob/main/LICENSE"><img src="https://img.shields.io/github/license/alphap365/open-news" alt="License"></a> <a href="https://github.com/alphap365/open-news/actions"><img src="https://img.shields.io/github/actions/workflow/status/alphap365/open-news/ci.yml?label=CI" alt="CI"></a> </p> </p>
 
-A minimal, modular Python package to fetch news articles, extract full text and metadata, retrieve RSS feeds, search Google News, and auto‑discover RSS feeds from any website.
-
-Designed to be lightweight and easy to integrate.
-
+A lightweight Python package to fetch news articles, extract full text and metadata, retrieve RSS feeds, search Google News, and auto‑discover RSS feeds from any website.
+No configuration file needed – feeds are curated in a separate Git branch and updated automatically.
 
 ## Features
 
@@ -11,15 +9,18 @@ Designed to be lightweight and easy to integrate.
   Uses `newspaper4k` → `trafilatura` → BeautifulSoup fallback pipeline.  
   Returns: `url`, `title`, `text`, `publish_date`, `source`.
 
-- **Fetch live news from RSS feeds**  
-  Load feeds from `config.json`. Returns articles with title, URL, source, publish date, and description.
+- **Fetch live news from curated RSS feeds**  
+  No local config file needed. Pre‑defined feeds are stored in a separate Git branch (`rss‑feeds`) and automatically updated.  
+  Supports **country‑specific** (e.g., `india`, `usa`) and **category** (e.g., `business`, `politics`) feeds.
 
 - **Search Google News**  
   Query news via Google News RSS. Redirect URLs are decoded using `googlenewsdecoder` where available, with automatic fallback to the raw redirect URL.
 
 - **Discover RSS feed from any website**  
-  Uses `feedfinder2` to find the RSS feed URL, then fetches articles from it.
+  Built‑in discovery using `BeautifulSoup` + `lxml` – no `feedfinder2` warnings.
 
+- **Automatic caching**  
+  Feeds are cached locally (24 hours by default) to reduce network requests.
 
 ## Installation
 
@@ -27,6 +28,7 @@ Clone this repository:
 
 ```bash
 git clone https://github.com/alphap365/open-news.git
+cd open-news
 ```
 
 Or install directly from GitHub:
@@ -42,38 +44,13 @@ pip install git+https://github.com/alphap365/open-news.git
 - `beautifulsoup4`
 - `lxml`
 - `feedparser`
-- `feedfinder2`
 - `googlenewsdecoder`
 - `httpx`
-
-
-## Configuration
-
-Create a `config.json` file (default path) with your RSS feeds and limits:
-
-```json
-{
-    "rss_feeds": [
-        {
-            "name": "BBC News",
-            "url": "http://feeds.bbci.co.uk/news/rss.xml"
-        },
-        {
-            "name": "CNN Top Stories",
-            "url": "http://rss.cnn.com/rss/edition.rss"
-        }
-    ],
-    "max_articles_per_feed": 8,
-    "search_limit": 10
-}
-```
-
-You can specify a custom config path at runtime (see examples below).
-
+- `requests`
 
 ## Usage
 
-### Basic example
+### Basic examples
 
 ```python
 from open_news import fetch_article, search_news, get_live_news, get_articles_from_website_rss
@@ -88,46 +65,49 @@ results = search_news("climate change", limit=5)
 for r in results:
     print(r["title"], r["url"])
 
-# 3. Get live news from configured RSS feeds
-live = get_live_news()
-for art in live:
+# 3. Get live news from India (country-specific feeds)
+india_news = get_live_news(country="india", limit_per_feed=3)
+for art in india_news:
     print(f"{art['source']}: {art['title']}")
 
-# 4. Discover RSS feed from a website and fetch its articles
+# 4. Get live news by category (business, politics, geopolitics, news)
+business_news = get_live_news(category="business", limit_per_feed=2)
+
+# 5. Discover RSS feed from a website and fetch its articles
 articles = get_articles_from_website_rss("https://techcrunch.com", limit=3)
 for a in articles:
     print(a["title"])
 ```
 
-### Using a custom config file
+### Available parameters for `get_live_news()`
 
-Pass the path explicitly (preferred — thread-safe):
+- `country` – two‑letter code for country‑specific feeds (e.g., `"india"`, `"usa"`, `"pakistan"`).  
+  If provided, `category` is ignored.
+- `category` – one of `"news"`, `"business"`, `"politics"`, `"geopolitics"`.  
+  Defaults to `"news"` if no country is given.
+- `limit_per_feed` – maximum articles per feed. Defaults to the value stored in the remote JSON (usually 8).
 
-```python
-from open_news import get_live_news
-from open_news.get_rss import load_rss_feeds_from_config
+### Caching
 
-config = load_rss_feeds_from_config("/home/user/my_config.json")
-articles = get_live_news()
+Feeds are cached in `~/.open_news/feeds_cache/` for 24 hours.  
+To force a refresh, set `use_cache=False` (not exposed in the high‑level function yet, but you can call `fetch_remote_feed_list` directly).
+
+## How feeds are maintained
+
+The feed definitions are stored **in the same repository** but in a separate branch: `rss‑feeds`.  
+The package fetches them from:
+
+```
+https://raw.githubusercontent.com/alphap365/open-news/rss-feeds/feeds/
 ```
 
-Or set a global config path (single-threaded use only):
+The branch contains JSON files like:
+- `feeds/news.json` – general news
+- `feeds/business.json`
+- `feeds/country/india.json`
+- `feeds/country/usa.json`
 
-```python
-from open_news import set_config_path, get_live_news
-
-# NOTE: set_config_path mutates a global and is not thread-safe.
-# Prefer passing config_path explicitly in multi-threaded contexts.
-set_config_path("/home/user/my_config.json")
-articles = get_live_news()
-```
-
-### Command-line test script
-
-```bash
-python test.py --config /path/to/config.json
-```
-
+These files can be updated independently of the package code. An update script (`scripts/update_feeds.py` in the `rss‑feeds` branch) uses the package’s own `discover_rss_feed()` to refresh URLs periodically.
 
 ## API Reference
 
@@ -148,35 +128,23 @@ All string fields are always present; `text` is an empty string on complete fail
 
 ### `search_news(query: str, limit: int = 10) -> List[Dict]`
 
-Searches Google News RSS. URLs are decoded to the real article link where possible;
-if decoding fails or `googlenewsdecoder` is not installed, the raw redirect URL is
-returned instead of dropping the article.
+Searches Google News RSS. URLs are decoded to the real article link where possible; if decoding fails or `googlenewsdecoder` is not installed, the raw redirect URL is returned instead of dropping the article.
 
 Returns list of dicts with keys: `title`, `url`, `source`, `published`, `description`.
 
-### `get_live_news(limit_per_feed: int = None) -> List[Dict]`
+### `get_live_news(country: str = None, category: str = "news", limit_per_feed: int = None) -> List[Dict]`
 
-Fetches articles from all RSS feeds in `config.json`. `limit_per_feed` defaults to
-`max_articles_per_feed` from config, or `8` if not set. Config is read once per call.
-
+Fetches articles from the remote feed list. If `country` is given, ignores `category` and loads from `feeds/country/<country>.json`. Otherwise loads from `feeds/<category>.json`.  
 Each article dict: `title`, `url`, `source`, `published`, `description`.
 
 ### `get_articles_from_website_rss(website_url: str, limit: int = 10) -> List[Dict]`
 
-Discovers the RSS feed of `website_url` using `feedfinder2`, then fetches articles.  
-Returns the same structure as `get_live_news()`.
-
-### `set_config_path(path: str) -> None`
-
-Sets the global config path. **Not thread-safe** — use the explicit `config_path`
-parameter on `load_rss_feeds_from_config()` in concurrent contexts.
-
+Discovers the RSS feed of `website_url` using the built‑in discovery (no external `feedfinder2`), then fetches articles. Returns the same structure as `get_live_news()`.
 
 ## Requirements
 
 - Python 3.8+
 - Internet connection
-
 
 ## License
 
@@ -194,5 +162,4 @@ Built on the shoulders of:
 - [newspaper4k](https://github.com/codelucas/newspaper)
 - [trafilatura](https://github.com/adbar/trafilatura)
 - [feedparser](https://github.com/kurtmckee/feedparser)
-- [feedfinder2](https://github.com/DF7CB/feedfinder2)
 - [googlenewsdecoder](https://github.com/HeiseL/GoogleNewsDecoder)
