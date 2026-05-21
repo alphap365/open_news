@@ -1,78 +1,115 @@
-"""Discover RSS feeds from a website URL and load feeds from config.json."""
+#!/usr/bin/env python3
+"""
+RSS feed handling: remote feed lists (from rss-feeds branch), discovery, caching.
+No config.json dependency.
+"""
 
 import os
 import json
+import time
 import logging
-from typing import List, Dict, Optional
+from typing import Dict, List, Optional
+from urllib.parse import urljoin
 
-try:
-    import feedfinder2
-except ImportError:
-    feedfinder2 = None
+import requests
+from bs4 import BeautifulSoup
 
 logger = logging.getLogger(__name__)
 
-# Allow override via environment variable OPEN_NEWS_CONFIG
-# FIX (Bug 4): keep the global for backward compat, but callers should prefer
-#              passing config_path explicitly to avoid thread-safety issues.
-CONFIG_PATH = os.environ.get("OPEN_NEWS_CONFIG", "config.json")
+# Remote base URL for raw JSON files (rss-feeds branch)
+REMOTE_BASE = "https://raw.githubusercontent.com/alphap365/open-news/rss-feeds/feeds"
 
+# Cache directory
+CACHE_DIR = os.path.expanduser("~/.open_news/feeds_cache")
+os.makedirs(CACHE_DIR, exist_ok=True)
 
-def set_config_path(path: str) -> None:
+# TTL for cache (24 hours)
+CACHE_TTL = 24 * 3600
+
+def _get_cache_path(category: str, country: Optional[str] = None) -> str:
+    """Return cache file path for a given category/country."""
+    if country:
+        filename = f"country_{country}.json"
+    else:
+        filename = f"{category}.json"
+    return os.path.join(CACHE_DIR, filename)
+
+def fetch_remote_feed_list(category: str = "news", country: Optional[str] = None, use_cache: bool = True) -> Dict:
     """
-    Set the global config path at runtime.
-
-    WARNING: This mutates a module-level global and is NOT thread-safe.
-    In multi-threaded or async contexts, pass `config_path` explicitly
-    to load_rss_feeds_from_config() instead.
+    Fetch feed JSON from the rss-feeds branch.
+    
+    Args:
+        category: 'news', 'business', 'politics', 'geopolitics' or any top-level JSON.
+        country: if provided, fetches from feeds/country/<country>.json (e.g., 'india', 'usa').
+        use_cache: if True, use cached copy if not expired.
+    
+    Returns:
+        Dict with keys: 'feeds', 'max_articles_per_feed', etc.
     """
-    global CONFIG_PATH
-    CONFIG_PATH = path
-
-
-def load_rss_feeds_from_config(config_path: Optional[str] = None) -> Dict:
-    """
-    Load the full config dict from config.json (or the given path).
-
-    Returns the parsed config dict, or {} on failure.
-    Callers can pull 'rss_feeds' and 'max_articles_per_feed' from it directly,
-    eliminating the need to re-read the file elsewhere.
-
-    FIX (Bug 5 / Bug 9): config is loaded once and returned in full so that
-    main.py can read both rss_feeds and max_articles_per_feed from a single
-    parse — no second open("config.json") required.
-    """
-    path = config_path or CONFIG_PATH
+    cache_path = _get_cache_path(category, country)
+    
+    # Try cache
+    if use_cache and os.path.exists(cache_path):
+        try:
+            with open(cache_path, 'r') as f:
+                data = json.load(f)
+            cached_time = data.get('_cached_at', 0)
+            if time.time() - cached_time < CACHE_TTL:
+                logger.debug(f"Using cached feed list for {category}/{country}")
+                return data
+        except Exception as e:
+            logger.warning(f"Cache read failed: {e}")
+    
+    # Construct remote URL
+    if country:
+        url = f"{REMOTE_BASE}/country/{country}.json"
+    else:
+        url = f"{REMOTE_BASE}/{category}.json"
+    
     try:
-        with open(path, "r") as f:
-            config = json.load(f)
-        feeds = config.get("rss_feeds", [])
-        logger.info(f"Loaded {len(feeds)} RSS feeds from {path}")
-        return config
-    except FileNotFoundError:
-        logger.warning(f"Config file {path} not found, using empty config")
-        return {}
+        resp = requests.get(url, timeout=10)
+        resp.raise_for_status()
+        data = resp.json()
+        # Add cache timestamp
+        data['_cached_at'] = time.time()
+        # Save to cache
+        with open(cache_path, 'w') as f:
+            json.dump(data, f)
+        logger.info(f"Fetched fresh feed list from {url}")
+        return data
     except Exception as e:
-        logger.error(f"Error loading config from {path}: {e}")
-        return {}
-
+        logger.error(f"Failed to fetch {url}: {e}")
+        # Fallback to stale cache if available
+        if os.path.exists(cache_path):
+            with open(cache_path, 'r') as f:
+                data = json.load(f)
+            logger.warning(f"Using stale cache for {category}/{country}")
+            return data
+        return {"feeds": [], "max_articles_per_feed": 8}
 
 def discover_rss_feed(website_url: str) -> Optional[str]:
     """
-    Use feedfinder2 to discover RSS feed URL from a website.
-    Returns first feed URL or None.
+    Find RSS/Atom feed URL from a website using BeautifulSoup.
+    No feedfinder2 dependency, explicit lxml parser → no warnings.
     """
-    if not feedfinder2:
-        logger.warning("feedfinder2 not installed, cannot auto-discover RSS")
-        return None
     try:
-        feeds = feedfinder2.find_feeds(website_url)
-        if feeds:
-            logger.info(f"Found RSS feed for {website_url}: {feeds[0]}")
-            return feeds[0]
-        else:
-            logger.info(f"No RSS feed found for {website_url}")
-            return None
+        headers = {"User-Agent": "open_news/1.0 (https://github.com/alphap365/open-news)"}
+        resp = requests.get(website_url, timeout=10, headers=headers)
+        resp.raise_for_status()
+        soup = BeautifulSoup(resp.text, "lxml")  # explicit parser
+        
+        # Look for link tags with feed types
+        for link in soup.find_all("link", type=["application/rss+xml", "application/atom+xml"]):
+            href = link.get("href")
+            if href:
+                return urljoin(website_url, href)
+        
+        # Fallback: look for <a> with feed/rss in href
+        for a in soup.find_all("a", href=True):
+            href = a["href"].lower()
+            if "feed" in href or "rss" in href or "atom" in href:
+                return urljoin(website_url, a["href"])
+        return None
     except Exception as e:
-        logger.error(f"Feed discovery failed for {website_url}: {e}")
+        logger.debug(f"Discovery failed for {website_url}: {e}")
         return None
