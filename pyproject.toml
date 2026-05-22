@@ -23,14 +23,12 @@ dynamic = ["dependencies"]
 [project.urls]
 Homepage = "https://github.com/alphap365/open-news"
 
+[tool.setuptools]
+include-package-data = true
+packages = ["open_news"]
+
 [tool.setuptools.dynamic]
 dependencies = {file = ["requirements.txt"]}
 
-[tool.setuptools.packages.find]
-where = ["."]
-
 [tool.setuptools.package-data]
 open_news = ["py.typed"]
-
-[tool.setuptools.options]
-include_package_data = true
