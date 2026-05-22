@@ -1,0 +1,36 @@
+[build-system]
+requires = ["setuptools>=61.0"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "open-news"
+version = "0.1.0"
+description = "Minimal news fetching: article text, RSS, Google News search, RSS discovery"
+readme = "README.md"
+authors = [{name = "ARAJIT PAUL", email = ""}]
+license = {text = "MIT"}
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: OS Independent",
+    "Intended Audience :: Developers",
+    "Topic :: Internet :: WWW/HTTP :: Dynamic Content :: News",
+]
+requires-python = ">=3.7"
+keywords = ["news", "rss", "google-news", "article-extraction", "feedparser", "newspaper"]
+dynamic = ["dependencies"]
+
+[project.urls]
+Homepage = "https://github.com/alphap365/open-news"
+
+[tool.setuptools.dynamic]
+dependencies = {file = ["requirements.txt"]}
+
+[tool.setuptools.packages.find]
+where = ["."]
+
+[tool.setuptools.package-data]
+open_news = ["py.typed"]
+
+[tool.setuptools.options]
+include_package_data = true
