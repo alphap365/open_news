@@ -295,6 +295,22 @@ feeds/
 
 ---
 
+## 📡 RSS Feeds Directory
+
+For detailed documentation on available RSS feeds, feed configuration, and how to contribute new feeds, see the [**RSS Feeds README**](rss-feeds/README.md).
+
+### Available Feed Categories:
+
+- **[General News](rss-feeds/README.md#general-news)** – Top news feeds across categories
+- **[Business News](rss-feeds/README.md#business-news)** – Financial and business-focused feeds
+- **[Politics](rss-feeds/README.md#politics)** – Political news and analysis
+- **[Geopolitics](rss-feeds/README.md#geopolitics)** – International relations and geopolitical coverage
+- **[Country-Specific](rss-feeds/README.md#country-specific-feeds)** – Feeds by country (India, USA, UK, Pakistan, etc.)
+
+👉 **[View all available feeds →](rss-feeds/README.md)**
+
+---
+
 ## ⚙️ Caching
 
 Feeds are automatically cached for **24 hours** in `~/.open_news/feeds_cache/` to reduce network requests.
