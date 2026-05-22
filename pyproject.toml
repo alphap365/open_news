@@ -7,7 +7,7 @@ name = "open-news"
 version = "0.1.0"
 description = "Minimal news fetching: article text, RSS, Google News search, RSS discovery"
 readme = "README.md"
-authors = [{name = "ARAJIT PAUL", email = ""}]
+authors = [{name = "ARAJIT PAUL", email = "dev.arajit.2010@gmail.com"}]
 license = {text = "MIT"}
 classifiers = [
     "Programming Language :: Python :: 3",
