@@ -1,190 +1,358 @@
-<p align="center">
-    <!-- Add a stylish banner image here (recommended size: 1200x600px) -->
-    <!-- <img src="banner.png" alt="open-news Banner" width="100%"> -->
+<div align="center">
 
-<h1 align="center">📰 open_news</h1>
+# 📰 open-news
 
-<p align="center">
-    <strong>Zero‑config news fetching & article extraction in Python</strong>
-</p>
+**Zero-Config News Fetching & Article Extraction for Python**
 
-<p align="center">
-    <!-- License Badge -->
-    <a href="https://github.com/alphap365/open-news/blob/main/LICENSE">
-        <img src="https://img.shields.io/github/license/alphap365/open-news?style=flat-square" alt="License">
-    </a>
-    <!-- Python Version Badge -->
-    <a href="https://www.python.org/">
-        <img src="https://img.shields.io/badge/python-3.7%2B-blue?style=flat-square&logo=python&logoColor=white" alt="Python Version">
-    </a>
-    <!-- Optional: PyPI Downloads Badge (if the project is published on PyPI) -->
-    <!--
-    <a href="https://pypi.org/project/open-news/">
-        <img src="https://img.shields.io/pypi/dm/open-news?style=flat-square&logo=pypi&logoColor=white" alt="PyPI Downloads">
-    </a>
-    -->
-</p>
+[![License](https://img.shields.io/github/license/alphap365/open-news?style=for-the-badge&color=blue)](LICENSE)
+[![Python](https://img.shields.io/badge/Python-3.7%2B-blue?style=for-the-badge&logo=python&logoColor=white)](https://www.python.org/)
+[![Status](https://img.shields.io/badge/Status-Active-brightgreen?style=for-the-badge)](https://github.com/alphap365/open-news)
 
-A lightweight Python package to fetch news articles, extract full text and metadata, retrieve RSS feeds, search Google News, and auto‑discover RSS feeds from any website.
-No configuration file needed – feeds are curated in a separate Git branch and updated automatically.
+*A lightweight, batteries-included Python package for fetching news articles, extracting content, and discovering RSS feeds.*
 
-## Features
+[Features](#-features) • [Installation](#-installation) • [Quick Start](#-quick-start) • [API Reference](#-api-reference) • [Contributing](#-contributing)
 
-- **Extract article text and metadata**  
-  Uses `newspaper4k` → `trafilatura` → BeautifulSoup fallback pipeline.  
-  Returns: `url`, `title`, `text`, `publish_date`, `source`.
+</div>
 
-- **Fetch live news from curated RSS feeds**  
-  No local config file needed. Pre‑defined feeds are stored in a separate Git branch (`rss‑feeds`) and automatically updated.  
-  Supports **country‑specific** (e.g., `india`, `usa`) and **category** (e.g., `business`, `politics`) feeds.
+---
 
-- **Search Google News**  
-  Query news via Google News RSS. Redirect URLs are decoded using `googlenewsdecoder` where available, with automatic fallback to the raw redirect URL.
+## 🎯 Features
 
-- **Discover RSS feed from any website**  
-  Built‑in discovery using `BeautifulSoup` + `lxml` – no `feedfinder2` warnings.
+<table>
+<tr>
+<td>
 
-- **Automatic caching**  
-  Feeds are cached locally (24 hours by default) to reduce network requests.
+### 📄 Article Extraction
+Extract full text and rich metadata from any news article with a smart fallback pipeline:
+- `newspaper4k` → `trafilatura` → BeautifulSoup
+- Returns: title, text, publish date, source URL
 
-## Installation
+</td>
+<td>
 
-Clone this repository:
+### 📡 Live News Feeds
+Access curated RSS feeds with zero local configuration:
+- **50+ country-specific feeds** (India, USA, Pakistan, etc.)
+- **Category feeds** (business, politics, geopolitics)
+- Auto-updating via Git branch
 
+</td>
+</tr>
+<tr>
+<td>
+
+### 🔍 Google News Search
+Search across Google News with decoded URLs:
+- Real article links (via `googlenewsdecoder`)
+- Fallback to raw URLs if needed
+- Rich metadata included
+
+</td>
+<td>
+
+### 🔗 RSS Discovery
+Auto-discover RSS feeds from any website:
+- No external `feedfinder2` dependency
+- Built with BeautifulSoup + lxml
+- Fetch articles from discovered feeds instantly
+
+</td>
+</tr>
+<tr>
+<td colspan="2">
+
+### ⚡ Smart Caching
+24-hour feed caching to minimize network requests and improve performance
+
+</td>
+</tr>
+</table>
+
+---
+
+## 📦 Installation
+
+### From GitHub
 ```bash
 git clone https://github.com/alphap365/open-news.git
 cd open-news
+pip install -e .
 ```
 
-Or install directly from GitHub:
-
+### Direct Install
 ```bash
 pip install git+https://github.com/alphap365/open-news.git
 ```
 
-**Dependencies** (automatically installed):
+**All dependencies installed automatically:**
+- `newspaper4k` • `trafilatura` • `beautifulsoup4` • `lxml`
+- `feedparser` • `googlenewsdecoder` • `httpx` • `requests`
 
-- `newspaper4k`
-- `trafilatura`
-- `beautifulsoup4`
-- `lxml`
-- `feedparser`
-- `googlenewsdecoder`
-- `httpx`
-- `requests`
+---
 
-## Usage
+## 🚀 Quick Start
 
-### Basic examples
-
+### 1️⃣ Extract Article Content
 ```python
-from open_news import fetch_article, search_news, get_live_news, get_articles_from_website_rss
+from open_news import fetch_article
 
-# 1. Fetch full article text and metadata
 article = fetch_article("https://www.bbc.com/news/world-us-canada-12345678")
+
 print(article["title"])
-print(article["text"][:200])
-
-# 2. Search Google News
-results = search_news("climate change", limit=5)
-for r in results:
-    print(r["title"], r["url"])
-
-# 3. Get live news from India (country-specific feeds)
-india_news = get_live_news(country="india", limit_per_feed=3)
-for art in india_news:
-    print(f"{art['source']}: {art['title']}")
-
-# 4. Get live news by category (business, politics, geopolitics, news)
-business_news = get_live_news(category="business", limit_per_feed=2)
-
-# 5. Discover RSS feed from a website and fetch its articles
-articles = get_articles_from_website_rss("https://techcrunch.com", limit=3)
-for a in articles:
-    print(a["title"])
+print(article["text"][:500])
+print(f"Source: {article['source']}")
+print(f"Published: {article['publish_date']}")
 ```
 
-### Available parameters for `get_live_news()`
+### 2️⃣ Search Google News
+```python
+from open_news import search_news
 
-- `country` – two‑letter code for country‑specific feeds (e.g., `"india"`, `"usa"`, `"pakistan"`).  
-  If provided, `category` is ignored.
-- `category` – one of `"news"`, `"business"`, `"politics"`, `"geopolitics"`.  
-  Defaults to `"news"` if no country is given.
-- `limit_per_feed` – maximum articles per feed. Defaults to the value stored in the remote JSON (usually 8).
+results = search_news("artificial intelligence", limit=5)
 
-### Caching
+for article in results:
+    print(f"✓ {article['title']}")
+    print(f"  → {article['url']}\n")
+```
 
-Feeds are cached in `~/.open_news/feeds_cache/` for 24 hours.  
-To force a refresh, set `use_cache=False` (not exposed in the high‑level function yet, but you can call `fetch_remote_feed_list` directly).
+### 3️⃣ Get Live News (Country-Specific)
+```python
+from open_news import get_live_news
 
-## How feeds are maintained
+# Get top news from India
+india_news = get_live_news(country="india", limit_per_feed=3)
 
-The feed definitions are stored **in the same repository** but in a separate branch: `rss‑feeds`.  
-The package fetches them from:
+for article in india_news:
+    print(f"[{article['source']}] {article['title']}")
+    print(f"Published: {article['published']}\n")
+```
 
+### 4️⃣ Get Category News
+```python
+# Business news from curated feeds
+business = get_live_news(category="business", limit_per_feed=2)
+
+for article in business:
+    print(f"{article['title']}")
+```
+
+### 5️⃣ Discover & Fetch RSS Feeds
+```python
+from open_news import get_articles_from_website_rss
+
+# Auto-discover RSS from any website
+articles = get_articles_from_website_rss("https://techcrunch.com", limit=5)
+
+for article in articles:
+    print(f"✓ {article['title']}")
+```
+
+---
+
+## 📚 API Reference
+
+### `fetch_article(url: str) → Dict`
+
+Extract article content and metadata from a given URL.
+
+**Returns:**
+```python
+{
+    "url": str,           # Original article URL
+    "title": str,         # Article headline
+    "text": str,          # Full article text
+    "publish_date": str,  # ISO 8601 timestamp (or empty string)
+    "source": str         # Website domain
+}
+```
+
+**Example:**
+```python
+article = fetch_article("https://example.com/article")
+if article["text"]:
+    print(f"✓ Successfully extracted: {article['title']}")
+else:
+    print("✗ Could not extract article content")
+```
+
+---
+
+### `search_news(query: str, limit: int = 10) → List[Dict]`
+
+Search Google News for recent articles.
+
+**Parameters:**
+- `query` (str): Search terms
+- `limit` (int): Maximum results to return (default: 10)
+
+**Returns:**
+```python
+[
+    {
+        "title": str,
+        "url": str,           # Decoded real URL (when possible)
+        "source": str,
+        "published": str,     # ISO 8601 timestamp
+        "description": str
+    },
+    ...
+]
+```
+
+**Example:**
+```python
+results = search_news("climate change", limit=5)
+print(f"Found {len(results)} articles")
+```
+
+---
+
+### `get_live_news(country: str = None, category: str = "news", limit_per_feed: int = None) → List[Dict]`
+
+Fetch articles from curated RSS feeds.
+
+**Parameters:**
+- `country` (str, optional): Two-letter country code
+  - Examples: `"india"`, `"usa"`, `"uk"`, `"pakistan"`
+  - When set, `category` is ignored
+- `category` (str): News category when no country specified
+  - Options: `"news"`, `"business"`, `"politics"`, `"geopolitics"`
+  - Default: `"news"`
+- `limit_per_feed` (int, optional): Articles per feed (default from remote config)
+
+**Returns:**
+```python
+[
+    {
+        "title": str,
+        "url": str,
+        "source": str,
+        "published": str,
+        "description": str
+    },
+    ...
+]
+```
+
+**Examples:**
+```python
+# Country-specific
+india_news = get_live_news(country="india", limit_per_feed=5)
+
+# Category-specific
+business = get_live_news(category="business")
+
+# Default news
+general = get_live_news()
+```
+
+---
+
+### `get_articles_from_website_rss(website_url: str, limit: int = 10) → List[Dict]`
+
+Discover and fetch articles from a website's RSS feed.
+
+**Parameters:**
+- `website_url` (str): Website homepage URL
+- `limit` (int): Maximum articles to return
+
+**Returns:** Same structure as `get_live_news()`
+
+**Example:**
+```python
+articles = get_articles_from_website_rss("https://hackernews.com", limit=10)
+for article in articles:
+    print(f"• {article['title']}")
+```
+
+---
+
+## 🗂️ How Feeds Are Maintained
+
+Feed definitions are stored **in a separate Git branch** (`rss-feeds`) within the same repository. This allows:
+
+✅ Independent feed updates without code changes  
+✅ Version control for feed list history  
+✅ Easy contributions for new feeds
+
+**Feed location:**
 ```
 https://raw.githubusercontent.com/alphap365/open-news/rss-feeds/feeds/
 ```
 
-The branch contains JSON files like:
-- `feeds/news.json` – general news
-- `feeds/business.json`
-- `feeds/country/india.json`
-- `feeds/country/usa.json`
-
-These files can be updated independently of the package code. An update script (`scripts/update_feeds.py` in the `rss‑feeds` branch) uses the package’s own `discover_rss_feed()` to refresh URLs periodically.
-
-## API Reference
-
-### `fetch_article(url: str) -> Dict`
-
-Tries `newspaper4k`, then `trafilatura` (with metadata), then BeautifulSoup.  
-All string fields are always present; `text` is an empty string on complete failure.
-
-```python
-{
-    "url": str,
-    "title": str,
-    "text": str,
-    "publish_date": str,   # ISO 8601 if available, else ""
-    "source": str
-}
+**Structure:**
+```
+feeds/
+├── news.json              # General news feeds
+├── business.json          # Business news feeds
+├── politics.json          # Political news feeds
+├── geopolitics.json       # Geopolitical analysis
+└── country/
+    ├── india.json         # India-specific feeds
+    ├── usa.json           # USA-specific feeds
+    └── ...                # Other countries
 ```
 
-### `search_news(query: str, limit: int = 10) -> List[Dict]`
+---
 
-Searches Google News RSS. URLs are decoded to the real article link where possible; if decoding fails or `googlenewsdecoder` is not installed, the raw redirect URL is returned instead of dropping the article.
+## ⚙️ Caching
 
-Returns list of dicts with keys: `title`, `url`, `source`, `published`, `description`.
+Feeds are automatically cached for **24 hours** in `~/.open_news/feeds_cache/` to reduce network requests.
 
-### `get_live_news(country: str = None, category: str = "news", limit_per_feed: int = None) -> List[Dict]`
+**Current implementation:** Cache is managed internally. Force refresh by clearing the cache directory if needed.
 
-Fetches articles from the remote feed list. If `country` is given, ignores `category` and loads from `feeds/country/<country>.json`. Otherwise loads from `feeds/<category>.json`.  
-Each article dict: `title`, `url`, `source`, `published`, `description`.
+---
 
-### `get_articles_from_website_rss(website_url: str, limit: int = 10) -> List[Dict]`
+## 🔧 Requirements
 
-Discovers the RSS feed of `website_url` using the built‑in discovery (no external `feedfinder2`), then fetches articles. Returns the same structure as `get_live_news()`.
+- **Python:** 3.7+
+- **Network:** Internet connection for live feeds
 
-## Requirements
+---
 
-- Python 3.8+
-- Internet connection
+## 📝 License
 
-## License
+Licensed under the **MIT License** – see [LICENSE](LICENSE) file for details.
 
-MIT – see [LICENSE](LICENSE) file.
+---
 
-## Contributing
+## 🤝 Contributing
 
-Contributions are welcome! Whether it’s a bug report, a feature request, or a pull request, please check out our [Contributing Guide](CONTRIBUTING.md) before getting started.
+We'd love your contributions! Whether it's:
+- 🐛 Bug reports
+- ✨ Feature requests
+- 📝 Documentation improvements
+- 🔗 New feed suggestions
+- 💻 Pull requests
 
-We appreciate all kinds of help – code, documentation, testing, or even just spreading the word. 🚀
+Please check out our [Contributing Guide](CONTRIBUTING.md) before getting started.
 
-## Acknowledgements
+**Ways to help:**
+- Submit new feeds for the `rss-feeds` branch
+- Improve article extraction quality
+- Add language/region support
+- Write tests and documentation
+- Share and star the project ⭐
 
-Built on the shoulders of:
-- [newspaper4k](https://github.com/codelucas/newspaper)
-- [trafilatura](https://github.com/adbar/trafilatura)
-- [feedparser](https://github.com/kurtmckee/feedparser)
-- [googlenewsdecoder](https://github.com/HeiseL/GoogleNewsDecoder)
+---
+
+## 🙏 Acknowledgements
+
+Built on the shoulders of amazing open-source projects:
+
+- [**newspaper4k**](https://github.com/codelucas/newspaper) – Article extraction
+- [**trafilatura**](https://github.com/adbar/trafilatura) – Content extraction
+- [**feedparser**](https://github.com/kurtmckee/feedparser) – RSS parsing
+- [**googlenewsdecoder**](https://github.com/HeiseL/GoogleNewsDecoder) – URL decoding
+- [**BeautifulSoup4**](https://www.crummy.com/software/BeautifulSoup/) – HTML parsing
+- [**lxml**](https://lxml.de/) – XML processing
+
+---
+
+<div align="center">
+
+**Made with ❤️ by [Arajit Paul](https://github.com/alphap365)**
+
+[⭐ Star us on GitHub](https://github.com/alphap365/open-news) | [📧 Email](mailto:dev.arajit.2010@gmail.com)
+
+</div>
