@@ -1,4 +1,33 @@
-<p align="center"> <h1 align="center">📰 open_news</h1> <p align="center"> <strong>Minimal, config‑free news fetching & article extraction</strong> </p> <p align="center"> <a href="https://pypi.org/project/open-news/"><img src="https://img.shields.io/pypi/v/open-news?color=blue&label=PyPI" alt="PyPI"></a> <a href="https://www.python.org/downloads/"><img src="https://img.shields.io/pypi/pyversions/open-news?color=green" alt="Python versions"></a> <a href="https://github.com/alphap365/open-news/blob/main/LICENSE"><img src="https://img.shields.io/github/license/alphap365/open-news" alt="License"></a> <a href="https://github.com/alphap365/open-news/actions"><img src="https://img.shields.io/github/actions/workflow/status/alphap365/open-news/ci.yml?label=CI" alt="CI"></a> </p> </p>
+<p align="center">
+    <!-- Add a stylish banner image here (recommended size: 1200x600px) -->
+    <!-- <img src="banner.png" alt="open-news Banner" width="100%"> -->
+
+<h1 align="center">📰 open_news</h1>
+
+<p align="center">
+    <strong>Zero‑config news fetching & article extraction in Python</strong>
+</p>
+
+<p align="center">
+    <!-- CI Status Badge (You can find the correct URL in your repository's Actions settings) -->
+    <a href="https://github.com/alphap365/open-news/actions">
+        <img src="https://img.shields.io/github/actions/workflow/status/alphap365/open-news/ci.yml?style=flat-square&label=CI&logo=github-actions&logoColor=white" alt="CI">
+    </a>
+    <!-- License Badge -->
+    <a href="https://github.com/alphap365/open-news/blob/main/LICENSE">
+        <img src="https://img.shields.io/github/license/alphap365/open-news?style=flat-square" alt="License">
+    </a>
+    <!-- Python Version Badge -->
+    <a href="https://www.python.org/">
+        <img src="https://img.shields.io/badge/python-3.7%2B-blue?style=flat-square&logo=python&logoColor=white" alt="Python Version">
+    </a>
+    <!-- Optional: PyPI Downloads Badge (if the project is published on PyPI) -->
+    <!--
+    <a href="https://pypi.org/project/open-news/">
+        <img src="https://img.shields.io/pypi/dm/open-news?style=flat-square&logo=pypi&logoColor=white" alt="PyPI Downloads">
+    </a>
+    -->
+</p>
 
 A lightweight Python package to fetch news articles, extract full text and metadata, retrieve RSS feeds, search Google News, and auto‑discover RSS feeds from any website.
 No configuration file needed – feeds are curated in a separate Git branch and updated automatically.
