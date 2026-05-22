@@ -9,10 +9,6 @@
 </p>
 
 <p align="center">
-    <!-- CI Status Badge (You can find the correct URL in your repository's Actions settings) -->
-    <a href="https://github.com/alphap365/open-news/actions">
-        <img src="https://img.shields.io/github/actions/workflow/status/alphap365/open-news/ci.yml?style=flat-square&label=CI&logo=github-actions&logoColor=white" alt="CI">
-    </a>
     <!-- License Badge -->
     <a href="https://github.com/alphap365/open-news/blob/main/LICENSE">
         <img src="https://img.shields.io/github/license/alphap365/open-news?style=flat-square" alt="License">
