@@ -19,7 +19,7 @@ def search_news(query: str, limit: int = 10) -> List[Dict]:
 
 def get_live_news(category: str = "news", country: Optional[str] = None, limit_per_feed: Optional[int] = None) -> List[Dict]:
     """
-    Fetch articles from RSS feeds defined in the remote feed list (rss-feeds branch).
+    Fetch articles from RSS feeds defined in the open-feeds repository.
     
     Args:
         category: 'news', 'business', 'politics', 'geopolitics' (or any top-level JSON).
