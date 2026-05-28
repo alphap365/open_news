@@ -34,7 +34,7 @@ Extract full text and rich metadata from any news article with a smart fallback 
 Access curated RSS feeds with zero local configuration:
 - **50+ country-specific feeds** (India, USA, Pakistan, etc.)
 - **Category feeds** (business, politics, geopolitics)
-- Auto-updating via Git branch
+- Sourced from [open-feeds](https://github.com/alphap365/open-feeds)
 
 </td>
 </tr>
@@ -267,47 +267,20 @@ for article in articles:
 
 ---
 
-## 🗂️ How Feeds Are Maintained
+## 📡 RSS Feeds
 
-Feed definitions are stored **in a separate Git branch** (`rss-feeds`) within the same repository. This allows:
+This package uses curated RSS feed definitions from the **[open-feeds](https://github.com/alphap365/open-feeds)** repository.
 
-✅ Independent feed updates without code changes  
-✅ Version control for feed list history  
-✅ Easy contributions for new feeds
+### Feed Sources
+- **50+ country-specific feeds** (India, USA, UK, Pakistan, etc.)
+- **Category feeds**: General news, Business, Politics, Geopolitics
+- All feeds are community-maintained and regularly tested
 
-**Feed location:**
-```
-https://raw.githubusercontent.com/alphap365/open-news/rss-feeds/feeds/
-```
+### Using the Feeds
+The `get_live_news()` function fetches feeds dynamically from the [open-feeds](https://github.com/alphap365/open-feeds) repository, so you always get the latest available feeds.
 
-**Structure:**
-```
-feeds/
-├── news.json              # General news feeds
-├── business.json          # Business news feeds
-├── politics.json          # Political news feeds
-├── geopolitics.json       # Geopolitical analysis
-└── country/
-    ├── india.json         # India-specific feeds
-    ├── usa.json           # USA-specific feeds
-    └── ...                # Other countries
-```
-
----
-
-## 📡 RSS Feeds Directory
-
-For detailed documentation on available RSS feeds, feed configuration, and how to contribute new feeds, see the [**RSS Feeds README**](rss-feeds/README.md).
-
-### Available Feed Categories:
-
-- **[General News](rss-feeds/README.md#general-news)** – Top news feeds across categories
-- **[Business News](rss-feeds/README.md#business-news)** – Financial and business-focused feeds
-- **[Politics](rss-feeds/README.md#politics)** – Political news and analysis
-- **[Geopolitics](rss-feeds/README.md#geopolitics)** – International relations and geopolitical coverage
-- **[Country-Specific](rss-feeds/README.md#country-specific-feeds)** – Feeds by country (India, USA, UK, Pakistan, etc.)
-
-👉 **[View all available feeds →](rss-feeds/README.md)**
+### Contributing to Feeds
+To add new RSS feeds or report broken feeds, visit the **[open-feeds repository](https://github.com/alphap365/open-feeds)** and follow their [contributing guidelines](https://github.com/alphap365/open-feeds#-contributing).
 
 ---
 
@@ -338,17 +311,17 @@ We'd love your contributions! Whether it's:
 - 🐛 Bug reports
 - ✨ Feature requests
 - 📝 Documentation improvements
-- 🔗 New feed suggestions
+- 🔗 Feed suggestions (see [open-feeds](https://github.com/alphap365/open-feeds))
 - 💻 Pull requests
 
 Please check out our [Contributing Guide](CONTRIBUTING.md) before getting started.
 
 **Ways to help:**
-- Submit new feeds for the `rss-feeds` branch
 - Improve article extraction quality
 - Add language/region support
 - Write tests and documentation
 - Share and star the project ⭐
+- Contribute feeds to [open-feeds](https://github.com/alphap365/open-feeds)
 
 ---
 
@@ -362,6 +335,7 @@ Built on the shoulders of amazing open-source projects:
 - [**googlenewsdecoder**](https://github.com/HeiseL/GoogleNewsDecoder) – URL decoding
 - [**BeautifulSoup4**](https://www.crummy.com/software/BeautifulSoup/) – HTML parsing
 - [**lxml**](https://lxml.de/) – XML processing
+- [**open-feeds**](https://github.com/alphap365/open-feeds) – RSS feed curations
 
 ---
 
