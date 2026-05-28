@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-RSS feed handling: remote feed lists (from rss-feeds branch), discovery, caching.
+RSS feed handling: remote feed lists (from open-feeds repo), discovery, caching.
 No config.json dependency.
 """
 
@@ -16,8 +16,8 @@ from bs4 import BeautifulSoup
 
 logger = logging.getLogger(__name__)
 
-# Remote base URL for raw JSON files (rss-feeds branch)
-REMOTE_BASE = "https://raw.githubusercontent.com/alphap365/open-news/rss-feeds/feeds"
+# Remote base URL for raw JSON files (open-feeds repository)
+REMOTE_BASE = "https://raw.githubusercontent.com/alphap365/open-feeds/main/feeds"
 
 # Cache directory
 CACHE_DIR = os.path.expanduser("~/.open_news/feeds_cache")
@@ -36,7 +36,7 @@ def _get_cache_path(category: str, country: Optional[str] = None) -> str:
 
 def fetch_remote_feed_list(category: str = "news", country: Optional[str] = None, use_cache: bool = True) -> Dict:
     """
-    Fetch feed JSON from the rss-feeds branch.
+    Fetch feed JSON from the open-feeds repository.
     
     Args:
         category: 'news', 'business', 'politics', 'geopolitics' or any top-level JSON.
